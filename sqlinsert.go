@@ -140,7 +140,7 @@ func (ins *Insert) Insert(tokenType TokenType, with InsertWith) (*sql.Stmt, erro
 }
 
 // InsertContext prepares and executes a SQL INSERT statement on a *sql.Conn, *sql.DB, *sql.Tx, or equivalent interface supporting PrepareContext(context.Context, string).
-func (ins *Insert) InsertContext(tokenType TokenType, with InsertWith) (*sql.Stmt, error) {
+func (ins *Insert) InsertContext(ctx context.Context, tokenType TokenType, with InsertWith) (*sql.Stmt, error) {
 	stmt, err := with.Prepare(ins.SQL(tokenType))
 	if err != nil {
 		return nil, err
@@ -148,6 +148,6 @@ func (ins *Insert) InsertContext(tokenType TokenType, with InsertWith) (*sql.Stm
 	defer func(stmt *sql.Stmt) {
 		_ = stmt.Close()
 	}(stmt)
-	_, err = stmt.Exec(ins.Args()...)
+	_, err = stmt.ExecContext(ctx, ins.Args()...)
 	return stmt, err
 }
