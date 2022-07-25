@@ -1,4 +1,4 @@
-module sqlinsert
+module github.com/zachvictor/sqlinsert
 
 go 1.18
 
