@@ -1,6 +1,17 @@
 # sqlinsert
-Generate SQL INSERT statement with bind parameters directly from a Go struct. Define column names in struct tags. Supports bind parameter token types of MySQL, PostgreSQL, Oracle, SingleStore (MemSQL), SQL Server (T-SQL), and their equivalents. Struct values become bind arguments. Works seamlessly with standard [database/sql](https://pkg.go.dev/database/sql) package. Use SQL string and Args slice piecemeal or use `Insert()` or `InsertContext()` with a `sql.Conn`, `sql.DB`, or `sql.Tx` to execute the INSERT statement directly.  
+Generate SQL INSERT statement with bind parameters directly from a Go struct.  
 [![Go Reference](https://pkg.go.dev/badge/github.com/zachvictor/sqlinsert.svg)](https://pkg.go.dev/github.com/zachvictor/sqlinsert)
+
+## Features
+* Define column names in struct tags.
+* Struct values become bind arguments.
+* Use SQL outputs and Args slice piecemeal. Or, use `Insert()`/`InsertContext()` with a `sql.Conn`, `sql.DB`, or `sql.Tx` to execute the INSERT statement directly, all in one blow.
+* Works seamlessly with Go standard library [database/sql](https://pkg.go.dev/database/sql) package. 
+* Supports bind parameter token types of MySQL, PostgreSQL, Oracle, SingleStore (MemSQL), SQL Server (T-SQL), and their equivalents.
+* Supports customized struct tags and token types.
+* Supports Go 1.15 and later.
+* 100% unit test coverage.
+
 ## Example
 ### Given
 ```sql
