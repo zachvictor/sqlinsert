@@ -56,12 +56,24 @@ func (*failingMock) PrepareContext(ctx context.Context, query string) (*sql.Stmt
 	return nil, err
 }
 
+func (*failingMock) Exec(query string, args ...interface{}) (sql.Result, error) {
+	_ = (func(string, ...interface{}) interface{} { return nil })(query, args)
+	err := errors.New(`driver-level failure, cannot execute query`)
+	return nil, err
+}
+
+func (*failingMock) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	_ = (func(context.Context, string, ...interface{}) interface{} { return nil })(ctx, query, args)
+	err := errors.New(`driver-level failure, cannot execute query`)
+	return nil, err
+}
+
 func TestNewInsert(t *testing.T) {
 	naked := &Insert{
-		Table:    tbl,
-		Record:   rec,
-		RowType:  reflect.TypeOf(rec),
-		RowValue: reflect.ValueOf(rec),
+		Table:       tbl,
+		Record:      rec,
+		recordType:  reflect.TypeOf(rec),
+		recordValue: reflect.ValueOf(rec),
 	}
 	built := NewInsert(tbl, rec)
 	if naked.Table != built.Table {
