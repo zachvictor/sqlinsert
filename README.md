@@ -10,7 +10,7 @@ Generate SQL INSERT statement with bind parameters directly from a Go struct.
 * Supports bind parameter token types of MySQL, PostgreSQL, Oracle, SingleStore (MemSQL), SQL Server (T-SQL), and their equivalents.
 * Supports customized struct tags and token types.
 * Supports Go 1.15 and later.
-* 100% unit test coverage.
+* 96.9% unit test coverage.
 
 ## Example
 ### Given
