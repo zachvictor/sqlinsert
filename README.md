@@ -65,16 +65,6 @@ ins := sqlinsert.Insert{`candy`, &rec}
 _, err := ins.Insert(db)
 ```
 
-## Limitations
-`sqlinsert` is for simple binding. It does not support SQL operations in the `VALUES` clause.
-If you require, say—
-```sql
-INSERT INTO foo (bar, baz, oof) VALUES (some_routine(?), POW(?, 2), ? + ?);
-```
-—then you can use `sqlinsert.Insert` methods piecemeal.
-For example, use `Insert.Columns` to build the column list for `Prepare`
-and `Insert.Args` to marshal the args for `Exec`/`ExecContext`.
-
 ## This is not an ORM
 
 ### Hide nothing
@@ -97,8 +87,8 @@ All aspects of SQL INSERT remain in your control:
 * *I just want the bind args for my Exec() call.* `Insert.Args()`
 * *I just want a simple, one-for-one wrapper.* `Insert.Insert()`
 
-### Let SQL INSERT be great
-SQL INSERT is already as close to functionally pure as possible. Why would we change that? Its simplicity and
+### Let SQL be great
+SQL’s INSERT is already as close to functionally pure as possible. Why would we change that? Its simplicity and
 directness are its power.
 
 ### Let database/sql be great
@@ -116,3 +106,13 @@ Go structs support ordered fields, strong types, and field metadata via [tags](h
 [reflection](https://pkg.go.dev/reflect#StructTag).
 In these respects, the Go struct can encapsulate the information of a SQL INSERT-row perfectly and completely.
 `sqlinsert` uses these features of Go structs to makes your SQL INSERT experience more Go-idiomatic.
+
+## Limitations
+`sqlinsert` is for simple binding. It does not support SQL operations in the `VALUES` clause.
+If you require, say—
+```sql
+INSERT INTO foo (bar, baz, oof) VALUES (some_routine(?), POW(?, 2), ? + ?);
+```
+—then you can use `sqlinsert.Insert` methods piecemeal.
+For example, use `Insert.Columns` to build the column list for `Prepare`
+and `Insert.Args` to marshal the args for `Exec`/`ExecContext`.
