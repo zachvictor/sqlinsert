@@ -8,6 +8,26 @@ import (
 	"strings"
 )
 
+// InsertWith models functionality needed to execute a SQL INSERT statement with database/sql via sql.DB or sql.Tx.
+// Note: sql.Conn is also supported, however, for PrepareContext and ExecContext only.
+type InsertWith interface {
+	Prepare(query string) (*sql.Stmt, error)
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+}
+
+// Inserter models functionality to produce a valid SQL INSERT statement with bind args.
+type Inserter interface {
+	Tokenize(tokenType TokenType) string
+	Columns() string
+	Params() string
+	SQL() string
+	Args() []interface{}
+	Insert(with InsertWith) (*sql.Stmt, error)
+	InsertContext(ctx context.Context, with InsertWith) (*sql.Stmt, error)
+}
+
 // Insert models data used to produce a valid SQL INSERT statement with bind args.
 // Table is the table name. Data is either a struct with column-name tagged fields and the data to be inserted or
 // a slice struct (struct ptr works too). Private recordType and recordValue fields are used with reflection to get
@@ -71,42 +91,46 @@ func (ins *Insert) SQL() string {
 // Args returns the arguments to be bound in Insert() or the variadic Exec/ExecContext functions in database/sql.
 func (ins *Insert) Args() []interface{} {
 	var (
-		args []interface{}
-		t    reflect.Type
-		row  reflect.Value
+		data    reflect.Value
+		rec     reflect.Value
+		recType reflect.Type
+		args    []interface{}
 	)
-	v := reflect.ValueOf(ins.Data)
-	if v.Kind() == reflect.Slice {
+	data = reflect.ValueOf(ins.Data)
+	if data.Kind() == reflect.Slice { // Multi row INSERT
 		argIndex := -1
-		if v.Index(0).Kind() == reflect.Pointer {
-			t = v.Index(0).Elem().Type()
+		if data.Index(0).Kind() == reflect.Pointer {
+			recType = data.Index(0).Elem().Type()
 		} else {
-			t = v.Index(0).Type()
+			recType = data.Index(0).Type()
 		}
-		args = make([]interface{}, v.Len()*t.NumField())
-		for rowIndex := 0; rowIndex < v.Len(); rowIndex++ {
-			for fieldIndex := 0; fieldIndex < t.NumField(); fieldIndex++ {
+		numRecs := data.Len()
+		numFieldsPerRec := recType.NumField()
+		numBindArgs := numRecs * numFieldsPerRec
+		args = make([]interface{}, numBindArgs)
+		for rowIndex := 0; rowIndex < data.Len(); rowIndex++ {
+			for fieldIndex := 0; fieldIndex < recType.NumField(); fieldIndex++ {
 				argIndex += 1
-				if v.Index(0).Kind() == reflect.Pointer {
-					row = v.Index(rowIndex).Elem()
+				if data.Index(0).Kind() == reflect.Pointer {
+					rec = data.Index(rowIndex).Elem()
 				} else {
-					row = v.Index(rowIndex)
+					rec = data.Index(rowIndex)
 				}
-				args[argIndex] = row.Field(fieldIndex).Interface()
+				args[argIndex] = rec.Field(fieldIndex).Interface()
 			}
 		}
 		return args
-	} else {
-		if v.Kind() == reflect.Pointer {
-			t = v.Elem().Type()
-			row = v.Elem()
+	} else { // Single-row INSERT: Insert.Data must be a struct (otherwise reflect will panic)
+		if data.Kind() == reflect.Pointer {
+			recType = data.Elem().Type()
+			rec = data.Elem()
 		} else {
-			t = v.Type()
-			row = v
+			recType = data.Type()
+			rec = data
 		}
-		args = make([]interface{}, t.NumField())
-		for i := 0; i < t.NumField(); i++ {
-			args[i] = row.Field(i).Interface()
+		args = make([]interface{}, recType.NumField())
+		for i := 0; i < recType.NumField(); i++ {
+			args[i] = rec.Field(i).Interface()
 		}
 		return args
 	}
