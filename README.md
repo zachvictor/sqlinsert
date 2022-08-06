@@ -5,7 +5,7 @@ Generate a SQL INSERT statement with bind parameters directly from a Go struct.
 ## Features
 * Define column names in struct tags.
 * Struct values become bind arguments.
-* Use SQL outputs and Args slice piecemeal. Or, use `Insert()`/`InsertContext()` with a `sql.Conn`, `sql.DB`, or 
+* Use SQL outputs and Args slice piecemeal. Or, use `Insert()`/`InsertContext()` with a `sql.Conn`, `sql.DB`, or
 `sql.Tx` to execute the INSERT statement directly.
 * Works seamlessly with Go standard library [database/sql](https://pkg.go.dev/database/sql) package. 
 * Supports bind parameter token types of MySQL, PostgreSQL, Oracle, SingleStore (MemSQL), SQL Server (T-SQL), and their 
@@ -81,11 +81,14 @@ It simply maps struct fields to INSERT elements:
 => [Exec](https://pkg.go.dev/database/sql@go1.17#Stmt.Exec) `args ...interface{}`
 ([Go 1.18](https://pkg.go.dev/database/sql@go1.18#DB.ExecContext)+ `args ...any`)
 
+### Use only what you need
 All aspects of SQL INSERT remain in your control:
 * *I just want the column names for my SQL.* `Insert.Columns()`
 * *I just want the parameter-tokens for my SQL.* `Insert.Params()`
 * *I just want the bind args for my Exec() call.* `Insert.Args()`
-* *I just want a simple, one-for-one wrapper.* `Insert.Insert()`
+* *I just want a Prepare-Exec wrapper.* `Insert.Insert()`
+
+## This is a helper
 
 ### Let SQL be great
 SQL’s INSERT is already as close to functionally pure as possible. Why would we change that? Its simplicity and
@@ -107,8 +110,9 @@ Go structs support ordered fields, strong types, and field metadata via [tags](h
 In these respects, the Go struct can encapsulate the information of a SQL INSERT-row perfectly and completely.
 `sqlinsert` uses these features of Go structs to makes your SQL INSERT experience more Go-idiomatic.
 
-## Limitations
-`sqlinsert` is for simple binding. It does not support SQL operations in the `VALUES` clause.
+## Limitations of the Prepare-Exec wrappers
+`Insert.Insert` and `Insert.Context` are for simple binding *only.*
+In the spirit of "hide nothing," these do *not* support SQL operations in the `VALUES` clause.
 If you require, say—
 ```sql
 INSERT INTO foo (bar, baz, oof) VALUES (some_function(?), REPLACE(?, 'oink', 'moo'), ? + ?);
