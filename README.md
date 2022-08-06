@@ -111,7 +111,7 @@ In these respects, the Go struct can encapsulate the information of a SQL INSERT
 `sqlinsert` is for simple binding. It does not support SQL operations in the `VALUES` clause.
 If you require, say—
 ```sql
-INSERT INTO foo (bar, baz, oof) VALUES (some_routine(?), POW(?, 2), ? + ?);
+INSERT INTO foo (bar, baz, oof) VALUES (some_function(?), REPLACE(?, 'oink', 'moo'), ? + ?);
 ```
 —then you can use `sqlinsert.Insert` methods piecemeal.
 For example, use `Insert.Columns` to build the column list for `Prepare`
