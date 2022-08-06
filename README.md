@@ -10,7 +10,7 @@ Generate a SQL INSERT statement with bind parameters directly from a Go struct.
 * Works seamlessly with Go standard library [database/sql](https://pkg.go.dev/database/sql) package. 
 * Supports bind parameter token types of MySQL, PostgreSQL, Oracle, SingleStore (MemSQL), SQL Server (T-SQL), and their 
 equivalents.
-* Supports customized struct tags and token types.
+* Supports custom struct tags and token types.
 * Supports Go 1.8 to 1.19.
 * Test coverage: 100% files, 97.5% statements. Tested on Go 1.15, 1.17, and 1.18.
 
@@ -83,10 +83,10 @@ It simply maps struct fields to INSERT elements:
 
 ### Use only what you need
 All aspects of SQL INSERT remain in your control:
-* *I just want the column names for my SQL.* `Insert.Columns()`
-* *I just want the parameter-tokens for my SQL.* `Insert.Params()`
-* *I just want the bind args for my Exec() call.* `Insert.Args()`
-* *I just want a Prepare-Exec wrapper.* `Insert.Insert()`
+* _I just want the column names for my SQL._ `Insert.Columns()`
+* _I just want the parameter-tokens for my SQL._ `Insert.Params()`
+* _I just want the bind args for my Exec() call._ `Insert.Args()`
+* _I just want a Prepare-Exec wrapper._ `Insert.Insert()`
 
 ## This is a helper
 
@@ -99,8 +99,8 @@ Some database vendors support collection types for bind parameters, some don’t
 Some database drivers support slices for bind args, some don’t.
 The complexity of this reality is met admirably by [database/sql](https://pkg.go.dev/database/sql)
 with the _necessary_ amount of flexibility and abstraction:
-*flexibility* in open-ended SQL;
-*abstraction* in the variadic `args ...interface{}` for bind args.
+_flexibility_ in open-ended SQL;
+_abstraction_ in the variadic `args ...interface{}` for bind args.
 In this way, [database/sql](https://pkg.go.dev/database/sql) respects INSERT’s power,
 hiding nothing even as it tolerates the vagaries of bind-parameter handling among database vendors and drivers.
 
@@ -111,8 +111,8 @@ In these respects, the Go struct can encapsulate the information of a SQL INSERT
 `sqlinsert` uses these features of Go structs to makes your SQL INSERT experience more Go-idiomatic.
 
 ## Limitations of the Prepare-Exec wrappers
-`Insert.Insert` and `Insert.Context` are for simple binding *only.*
-In the spirit of "hide nothing," these do *not* support SQL operations in the `VALUES` clause.
+`Insert.Insert` and `Insert.InsertContext` are for simple binding _only._
+In the spirit of “hide nothing,” these do _not_ support SQL operations in the `VALUES` clause.
 If you require, say—
 ```sql
 INSERT INTO foo (bar, baz, oof) VALUES (some_function(?), REPLACE(?, 'oink', 'moo'), ? + ?);
