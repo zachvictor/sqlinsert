@@ -97,11 +97,11 @@ func (ins *Insert) Args() []interface{} {
 		args    []interface{}
 	)
 	data = reflect.ValueOf(ins.Data)
-	if data.Kind() == reflect.Slice { // Multi row INSERT
+	if data.Kind() == reflect.Slice { // Multi row INSERT: Insert.Data is a slice-of-struct-pointer or slice-of-struct
 		argIndex := -1
-		if data.Index(0).Kind() == reflect.Pointer {
+		if data.Index(0).Kind() == reflect.Pointer { // First slice element is struct pointers
 			recType = data.Index(0).Elem().Type()
-		} else {
+		} else { // First slice element is struct
 			recType = data.Index(0).Type()
 		}
 		numRecs := data.Len()
@@ -109,22 +109,22 @@ func (ins *Insert) Args() []interface{} {
 		numBindArgs := numRecs * numFieldsPerRec
 		args = make([]interface{}, numBindArgs)
 		for rowIndex := 0; rowIndex < data.Len(); rowIndex++ {
-			for fieldIndex := 0; fieldIndex < recType.NumField(); fieldIndex++ {
+			if data.Index(0).Kind() == reflect.Pointer {
+				rec = data.Index(rowIndex).Elem() // Cur slice elem is struct pointer, get arg val from ref-element
+			} else {
+				rec = data.Index(rowIndex) // Cur slice elem is struct, can get arg val directly
+			}
+			for fieldIndex := 0; fieldIndex < numFieldsPerRec; fieldIndex++ {
 				argIndex += 1
-				if data.Index(0).Kind() == reflect.Pointer {
-					rec = data.Index(rowIndex).Elem()
-				} else {
-					rec = data.Index(rowIndex)
-				}
 				args[argIndex] = rec.Field(fieldIndex).Interface()
 			}
 		}
 		return args
-	} else { // Single-row INSERT: Insert.Data must be a struct (otherwise reflect will panic)
-		if data.Kind() == reflect.Pointer {
+	} else { // Single-row INSERT: Insert.Data must be a struct pointer or struct (otherwise reflect will panic)
+		if data.Kind() == reflect.Pointer { // Row information via struct pointer
 			recType = data.Elem().Type()
 			rec = data.Elem()
-		} else {
+		} else { // Row information via struct
 			recType = data.Type()
 			rec = data
 		}

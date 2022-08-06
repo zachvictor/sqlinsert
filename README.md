@@ -12,7 +12,7 @@ Generate a SQL INSERT statement with bind parameters directly from a Go struct.
 equivalents.
 * Supports customized struct tags and token types.
 * Supports Go 1.8 to 1.19.
-* 96.9% unit test coverage. Tested extensively with Go 1.15 and 1.18.
+* Test coverage: 100% files, 97.5% statements. Tested on Go 1.15, 1.17, and 1.18.
 
 ## Example
 ### Given

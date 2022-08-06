@@ -9,7 +9,9 @@ import (
 	"time"
 )
 
-/* COLUMNS */
+/* Insert.Columns */
+
+// - Single-row Insert.Columns
 
 func TestColumnsOneRecValue(t *testing.T) {
 	ins := Insert{tbl, recValue}
@@ -29,6 +31,8 @@ func TestColumnsOneRecPointer(t *testing.T) {
 	}
 }
 
+// - Multi-row Insert.Columns
+
 func TestColumnsManyRecsValues(t *testing.T) {
 	ins := Insert{tbl, fiveRecsValues}
 	expected := `(id,candy_name,form_factor,description,manufacturer,weight_grams,ts)`
@@ -47,7 +51,9 @@ func TestColumnsManyRecsPointers(t *testing.T) {
 	}
 }
 
-/* PARAMS */
+/* Insert.Params */
+
+// - Single-row Insert.Params
 
 func TestParamsOneRecValue(t *testing.T) {
 	UseTokenType = QuestionMarkTokenType
@@ -69,6 +75,8 @@ func TestParamsOneRecPointer(t *testing.T) {
 	}
 }
 
+// - Multi-row Insert.Params
+
 func TestParamsManyRecsValues(t *testing.T) {
 	UseTokenType = QuestionMarkTokenType
 	ins := Insert{tbl, fiveRecsValues}
@@ -89,7 +97,9 @@ func TestParamsManyRecsPointers(t *testing.T) {
 	}
 }
 
-/* SQL */
+/* Insert.SQL */
+
+// - Single-row Insert.SQL
 
 func TestSQLOneRecValue(t *testing.T) {
 	UseTokenType = OrdinalNumberTokenType
@@ -111,6 +121,8 @@ func TestSQLOneRecPointer(t *testing.T) {
 	}
 }
 
+// - Multi-row Insert.SQL
+
 func TestSQLManyRecsValues(t *testing.T) {
 	UseTokenType = OrdinalNumberTokenType
 	ins := Insert{tbl, fiveRecsValues}
@@ -131,7 +143,9 @@ func TestSQLManyRecsPointers(t *testing.T) {
 	}
 }
 
-/* ARGS */
+/* Insert.Args */
+
+// - Single-row Insert.Args
 
 func TestArgsOneRecValue(t *testing.T) {
 	ins := Insert{tbl, recValue}
@@ -167,6 +181,8 @@ func TestArgsOneRecPointer(t *testing.T) {
 	}
 }
 
+// - Multi-row Insert.Args
+
 func TestArgsManyRecsValues(t *testing.T) {
 	ins := Insert{tbl, fiveRecsValues}
 	expected := []interface{}{
@@ -199,7 +215,10 @@ func TestArgsManyRecsPointers(t *testing.T) {
 
 /* INSERT */
 
-func TestInsert(t *testing.T) {
+// - Single-row Insert.Insert, Insert.InsertContext
+
+// TestInsertOneRecValue tests single-row insert with every token type using struct input
+func TestInsertOneRecValue(t *testing.T) {
 	for tt := range valuesTokenTypes {
 		UseTokenType = TokenType(tt)
 		ins := Insert{tbl, recValue}
@@ -217,10 +236,127 @@ func TestInsert(t *testing.T) {
 	}
 }
 
-func TestInsertContext(t *testing.T) {
+// TestInsertOneRecPointer tests single-row insert with every token type using struct-pointer input
+func TestInsertOneRecPointer(t *testing.T) {
+	for tt := range valuesTokenTypes {
+		UseTokenType = TokenType(tt)
+		ins := Insert{tbl, recPointer}
+		s := regexp.QuoteMeta(ins.SQL())
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf(`failed to construct SQL mock %s`, err)
+		}
+		mock.ExpectPrepare(s)
+		mock.ExpectExec(s).WillReturnResult(sqlmock.NewResult(1, 1))
+		_, err = ins.Insert(db)
+		if err != nil {
+			t.Fatalf(`failed at Insert, could not execute SQL statement %s`, err)
+		}
+	}
+}
+
+// TestInsertContextOneRecValue tests single-row insert with context with every token type using struct input
+func TestInsertContextOneRecValue(t *testing.T) {
 	for tt := range valuesTokenTypes {
 		UseTokenType = TokenType(tt)
 		ins := Insert{tbl, recValue}
+		s := regexp.QuoteMeta(ins.SQL())
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf(`failed to construct SQL mock %s`, err)
+		}
+		mock.ExpectPrepare(s)
+		mock.ExpectExec(s).WillReturnResult(sqlmock.NewResult(1, 1))
+		_, err = ins.InsertContext(context.Background(), db)
+		if err != nil {
+			t.Fatalf(`failed at InsertContext, could not execute SQL statement %s`, err)
+		}
+	}
+}
+
+// TestInsertContextOneRecPointer tests single-row insert with context with every token type using struct-pointer input
+func TestInsertContextOneRecPointer(t *testing.T) {
+	for tt := range valuesTokenTypes {
+		UseTokenType = TokenType(tt)
+		ins := Insert{tbl, recPointer}
+		s := regexp.QuoteMeta(ins.SQL())
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf(`failed to construct SQL mock %s`, err)
+		}
+		mock.ExpectPrepare(s)
+		mock.ExpectExec(s).WillReturnResult(sqlmock.NewResult(1, 1))
+		_, err = ins.InsertContext(context.Background(), db)
+		if err != nil {
+			t.Fatalf(`failed at InsertContext, could not execute SQL statement %s`, err)
+		}
+	}
+}
+
+// - Multi-row Insert.Insert, Insert.InsertContext
+
+// TestInsertManyRecsValues tests multi-row insert with every token type using slice-of-struct input
+func TestInsertManyRecsValues(t *testing.T) {
+	for tt := range valuesTokenTypes {
+		UseTokenType = TokenType(tt)
+		ins := Insert{tbl, fiveRecsValues}
+		s := regexp.QuoteMeta(ins.SQL())
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf(`failed to construct SQL mock %s`, err)
+		}
+		mock.ExpectPrepare(s)
+		mock.ExpectExec(s).WillReturnResult(sqlmock.NewResult(1, 1))
+		_, err = ins.Insert(db)
+		if err != nil {
+			t.Fatalf(`failed at Insert, could not execute SQL statement %s`, err)
+		}
+	}
+}
+
+// TestInsertManyRecsPointers tests multi-row insert with every token type using slice-of-struct-pointer input
+func TestInsertManyRecsPointers(t *testing.T) {
+	for tt := range valuesTokenTypes {
+		UseTokenType = TokenType(tt)
+		ins := Insert{tbl, fiveRecsPointers}
+		s := regexp.QuoteMeta(ins.SQL())
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf(`failed to construct SQL mock %s`, err)
+		}
+		mock.ExpectPrepare(s)
+		mock.ExpectExec(s).WillReturnResult(sqlmock.NewResult(1, 1))
+		_, err = ins.Insert(db)
+		if err != nil {
+			t.Fatalf(`failed at Insert, could not execute SQL statement %s`, err)
+		}
+	}
+}
+
+// TestInsertContextManyRecsValues tests multi-row insert with context with every token type using slice-of-struct input
+func TestInsertContextManyRecsValues(t *testing.T) {
+	for tt := range valuesTokenTypes {
+		UseTokenType = TokenType(tt)
+		ins := Insert{tbl, fiveRecsValues}
+		s := regexp.QuoteMeta(ins.SQL())
+		db, mock, err := sqlmock.New()
+		if err != nil {
+			t.Fatalf(`failed to construct SQL mock %s`, err)
+		}
+		mock.ExpectPrepare(s)
+		mock.ExpectExec(s).WillReturnResult(sqlmock.NewResult(1, 1))
+		_, err = ins.InsertContext(context.Background(), db)
+		if err != nil {
+			t.Fatalf(`failed at InsertContext, could not execute SQL statement %s`, err)
+		}
+	}
+}
+
+// TestInsertContextManyRecsPointers tests multi-row insert with context with every token type using slice-of-struct-pointer input
+func TestInsertContextManyRecsPointers(t *testing.T) {
+	for tt := range valuesTokenTypes {
+		UseTokenType = TokenType(tt)
+		ins := Insert{tbl, fiveRecsPointers}
 		s := regexp.QuoteMeta(ins.SQL())
 		db, mock, err := sqlmock.New()
 		if err != nil {
