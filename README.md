@@ -65,12 +65,47 @@ ins := sqlinsert.Insert{`candy`, &rec}
 _, err := ins.Insert(db)
 ```
 
-## This is not an ORM
+### I want to see the SQL
+Question-mark (?) VALUES-tokens are the default:
+```go
+fmt.Println(ins.SQL())
+// INSERT INTO candy (id,candy_name,form_factor,description,manufacturer,weight_grams,ts) VALUES (?,?,?,?,?,?,?)
+```
 
-### Hide nothing
-Unlike ORMs, `sqlinsert` does **not** create an abstraction layer over SQL relations, nor does it restructure SQL
-functions.
-The aim is to keep it simple and hide nothing.
+You can change the token type. For example, for PostgreSQL:
+```go
+sqlinsert.UseTokenType = OrdinalNumberTokenType
+fmt.Println(ins.SQL())
+// INSERT INTO candy (id,candy_name,form_factor,description,manufacturer,weight_grams,ts) VALUES ($1,$2,$3,$4,$5,$6,$7)
+```
+
+### I want to see the args
+
+```go
+pretty.Println(ins.Args())
+```
+yields (using [github.com/kr/pretty](https://github.com/kr/pretty)):
+```
+[]interface {}{
+    "c0600afd-78a7-4a1a-87c5-1bc48cafd14e",
+    "Gougat",
+    "Package",
+    "tastes like gopher feed",
+    "Gouggle",
+    float64(1.1618),
+    time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC),
+}
+```
+
+### I want to use database/sql apparatus
+```go
+stmt, _ := db.Prepare(ins.SQL())
+result, _ := stmt.Exec(ins.Args()...)
+```
+
+
+## This is a helper
+
 `sqlinsert` is fundamentally a helper for [database/sql](https://pkg.go.dev/database/sql).
 It simply maps struct fields to INSERT elements:
 * struct tags
@@ -88,7 +123,12 @@ All aspects of SQL INSERT remain in your control:
 * _I just want the bind args for my Exec() call._ `Insert.Args()`
 * _I just want a Prepare-Exec wrapper._ `Insert.Insert()`
 
-## This is a helper
+## This is not an ORM
+
+### Hide nothing
+Unlike ORMs, `sqlinsert` does **not** create an abstraction layer over SQL relations, nor does it restructure SQL
+functions.
+The aim is to keep it simple and hide nothing.
 
 ### Let SQL be great
 SQL’s INSERT is already as close to functionally pure as possible. Why would we change that? Its simplicity and
