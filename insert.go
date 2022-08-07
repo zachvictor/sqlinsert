@@ -30,8 +30,7 @@ type Inserter interface {
 
 // Insert models data used to produce a valid SQL INSERT statement with bind args.
 // Table is the table name. Data is either a struct with column-name tagged fields and the data to be inserted or
-// a slice struct (struct ptr works too). Private recordType and recordValue fields are used with reflection to get
-// struct tags for Insert.Columns, Insert.Params, and Insert.SQL and to retrieve values for Insert.Args.
+// a slice struct (struct ptr works too).
 type Insert struct {
 	Table string
 	Data  interface{}
